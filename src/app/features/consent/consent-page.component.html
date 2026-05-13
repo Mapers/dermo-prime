@@ -1,0 +1,91 @@
+<section class="page-shell">
+  <main class="page-card" [attr.aria-busy]="store.loadState() === 'loading' || store.submitState() === 'loading'">
+    <header class="hero-block">
+      <div class="topbar">
+        <app-brand-lockup />
+        <app-flow-stepper [activeStep]="1" />
+      </div>
+
+      <div class="hero-intro">
+        <div class="hero-block__copy">
+          <h1 class="display-title">Consentimiento digital previo a la evaluación VISIA</h1>
+        </div>
+      </div>
+    </header>
+
+    <section *ngIf="store.loadState() === 'loading'" class="card-base status-card" role="status" aria-live="polite">
+      <div class="status-card__visual" aria-hidden="true">
+        <div class="status-card__orb"></div>
+        <div class="status-card__spinner"></div>
+      </div>
+
+      <div class="status-card__content">
+        <h2>Cargando consentimiento</h2>
+        <p>Estamos validando el acceso y preparando la información legal vigente.</p>
+        <div class="status-card__progress" aria-hidden="true">
+          <span></span>
+        </div>
+      </div>
+    </section>
+
+    <ng-container *ngIf="showBlockingError()">
+      <app-error-state
+        *ngIf="store.error() as error"
+        [title]="error.title"
+        [message]="error.message"
+        [technicalCode]="error.technicalCode"
+        [retryable]="error.retryable"
+        (retryRequested)="onRetryLoad()"
+      ></app-error-state>
+    </ng-container>
+
+    <ng-container *ngIf="store.page() as page">
+      <article class="card-base legal-card" aria-labelledby="legal-title">
+        <div class="section-head">
+          <h2 id="legal-title">Lectura informada</h2>
+        </div>
+        <div class="legal-card__body legal-card__text" [innerHTML]="page.legalText"></div>
+      </article>
+
+      <div class="trust-strip" aria-label="Resumen de privacidad">
+        <span class="trust-strip__item"><strong>Guardamos:</strong> fecha, versión, canal y estado del consentimiento.</span>
+        <span class="trust-strip__sep" aria-hidden="true"></span>
+        <span class="trust-strip__item trust-strip__item--muted"><strong>No guardamos:</strong> nombre, DNI, teléfono, correo ni resultados VISIA.</span>
+      </div>
+
+      <form class="card-base consent-form" [formGroup]="consentForm" (ngSubmit)="onSubmit()" novalidate>
+        <label class="checkbox-panel" [class.checkbox-panel--invalid]="acceptanceControl.invalid && acceptanceControl.touched">
+          <input type="checkbox" formControlName="accepted" />
+          <span>
+            <strong>Aceptación expresa</strong>
+            {{ page.acceptanceLabel }}
+          </span>
+        </label>
+
+        <p *ngIf="acceptanceControl.invalid && acceptanceControl.touched" class="validation-message">
+          Debes aceptar expresamente el consentimiento para continuar.
+        </p>
+
+        <app-error-state
+          *ngIf="store.submitState() === 'error' && store.error() as error"
+          [title]="error.title"
+          [message]="error.message"
+          [technicalCode]="error.technicalCode"
+          [compact]="true"
+        ></app-error-state>
+
+        <button
+          class="primary-action"
+          type="submit"
+          [disabled]="acceptanceControl.invalid || store.submitState() === 'loading'"
+        >
+          {{ submitButtonText() }}
+        </button>
+
+        <p *ngIf="store.submitState() === 'loading'" class="processing-copy" role="status" aria-live="polite">
+          Registrando tu aceptación. Por favor no cierres esta pantalla.
+        </p>
+      </form>
+    </ng-container>
+  </main>
+</section>

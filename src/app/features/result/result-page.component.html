@@ -1,0 +1,48 @@
+<section class="page-shell">
+  <main class="page-card page-card--narrow">
+    <header class="result-header">
+      <div class="topbar">
+        <app-brand-lockup />
+        <app-flow-stepper [activeStep]="2" />
+      </div>
+
+      <div *ngIf="confirmedResult()" class="success-hero" aria-hidden="true">
+        <span class="success-hero__spark success-hero__spark--1"></span>
+        <span class="success-hero__spark success-hero__spark--2"></span>
+        <span class="success-hero__spark success-hero__spark--3"></span>
+        <div class="success-hero__mark">
+          <svg viewBox="0 0 24 24">
+            <path d="m5.5 12.5 4.2 4.2L18.5 8" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path>
+          </svg>
+        </div>
+      </div>
+
+      <p *ngIf="confirmedResult(); else missingCode" class="lead-text">
+        Tu consentimiento fue registrado correctamente. <strong>Muestra este código a la dermoconsultora</strong> para continuar la atención.
+      </p>
+    </header>
+
+    <ng-template #missingCode>
+      <app-error-state
+        [title]="'No encontramos un código confirmado'"
+        [message]="'Vuelve al flujo principal y completa nuevamente la aceptación para obtener un código válido.'"
+        [retryable]="false"
+        [technicalCode]="'MISSING_AUTHORIZATION_CODE'"
+      ></app-error-state>
+    </ng-template>
+
+    <ng-container *ngIf="confirmedResult() as confirmedResult">
+      <section class="card-base code-card" aria-label="Código de autorización">
+        <p class="code-card__label">Código de sesión</p>
+        <div class="code-card__tiles" [attr.aria-label]="confirmedResult.authorizationCode">
+          <span *ngFor="let character of codeCharacters(); let index = index" class="code-card__tile" [class.code-card__tile--accent]="index > 2">
+            {{ character }}
+          </span>
+        </div>
+      </section>
+
+    </ng-container>
+
+    <button type="button" class="secondary-action" (click)="onBack()">Volver</button>
+  </main>
+</section>
