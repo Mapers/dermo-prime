@@ -1,21 +1,20 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-
-import { environment } from '../../../environments/environment';
 import {
   ConsentPageRequest,
   ConsentPageResponse,
   SubmitConsentRequest,
   SubmitConsentResponse
 } from '../models/consent.models';
+import { variablesConfig } from '../../../assets/global/variable-config';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ConsentApiClient {
   private readonly http = inject(HttpClient);
-  private readonly apiBaseUrl = environment.apiBaseUrl.replace(/\/$/, '');
+  private readonly apiBaseUrl = variablesConfig.apiBaseUrl.replace(/\/$/, '');
 
   getConsentPage(request: ConsentPageRequest): Observable<ConsentPageResponse> {
     const params = new HttpParams({
