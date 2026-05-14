@@ -30,17 +30,17 @@ export class ConsentPageComponent implements OnInit {
     })
   });
   protected readonly acceptanceControl = this.consentForm.controls.accepted;
-  //protected readonly entry = this.route.snapshot.data['entry'] as ConsentEntryContext;
+  protected readonly entry = this.route.snapshot.data['entry'] as ConsentEntryContext;
   consentChannel:  ConsentChannel = environment.channel;
 
-  baseEntry: ConsentEntryContext = {
+  /*baseEntry: ConsentEntryContext = {
       accessCode: environment.accessCode,
       channel: environment.channel,
       isValid: true,
       reason: 'invalid-channel'
-  };
+  };*/
   
-  protected readonly entry = this.baseEntry;
+  //protected readonly entry = this.baseEntry;
 
   protected readonly submitButtonText = computed(() =>
     this.store.submitState() === 'loading' ? 'Procesando...' : 'Aceptar y continuar'
