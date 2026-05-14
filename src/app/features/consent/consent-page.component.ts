@@ -3,11 +3,12 @@ import { ChangeDetectionStrategy, Component, OnInit, computed, inject } from '@a
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 
-import { ConsentEntryContext } from '../../core/models/consent.models';
+import { ConsentChannel, ConsentEntryContext } from '../../core/models/consent.models';
 import { ConsentFlowStore } from '../../core/services/consent-flow.store';
 import { BrandLockupComponent } from '../../shared/components/brand-lockup/brand-lockup.component';
 import { ErrorStateComponent } from '../../shared/components/error-state/error-state.component';
 import { FlowStepperComponent } from '../../shared/components/flow-stepper/flow-stepper.component';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-consent-page',
@@ -29,7 +30,17 @@ export class ConsentPageComponent implements OnInit {
     })
   });
   protected readonly acceptanceControl = this.consentForm.controls.accepted;
-  protected readonly entry = this.route.snapshot.data['entry'] as ConsentEntryContext;
+  //protected readonly entry = this.route.snapshot.data['entry'] as ConsentEntryContext;
+  consentChannel:  ConsentChannel = environment.channel;
+
+  baseEntry: ConsentEntryContext = {
+      accessCode: environment.accessCode,
+      channel: environment.channel,
+      isValid: true,
+      reason: 'invalid-channel'
+  };
+  
+  protected readonly entry = this.baseEntry;
 
   protected readonly submitButtonText = computed(() =>
     this.store.submitState() === 'loading' ? 'Procesando...' : 'Aceptar y continuar'
