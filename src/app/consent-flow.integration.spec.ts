@@ -9,11 +9,14 @@ import { routes } from './app.routes';
 import { correlationIdInterceptor } from './core/interceptors/correlation-id.interceptor';
 import { ConsentPageComponent } from './features/consent/consent-page.component';
 import { ResultPageComponent } from './features/result/result-page.component';
+import { environment } from '../environments/environment';
+import { ConsentFlowStore } from './core/services/consent-flow.store';
 
 describe('Consent flow integration', () => {
   let httpController: HttpTestingController;
   let router: Router;
   let harness: RouterTestingHarness;
+  let store: ConsentFlowStore;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -28,6 +31,7 @@ describe('Consent flow integration', () => {
     httpController = TestBed.inject(HttpTestingController);
     router = TestBed.inject(Router);
     harness = await RouterTestingHarness.create();
+    store = TestBed.inject(ConsentFlowStore);
   });
 
   afterEach(() => {
@@ -35,19 +39,28 @@ describe('Consent flow integration', () => {
   });
 
   it('should load consent, accept it, and navigate to a confirmed success result only from a valid flow', async () => {
-    const originalScannedUrl = '/?accessCode=valid-qr-code&channel=QR&campaign=source-qr';
+    const originalScannedUrl = '/?accessCode=' + environment.accessCode + '&channel=' + environment.channel + '&campaign=source-qr';
 
     await harness.navigateByUrl(originalScannedUrl, ConsentPageComponent);
 
+    // Verifica el estado de carga usando la señal pública del store
+    expect(store.loadState()).toBe('loading');
     expect(harness.routeNativeElement?.textContent).toContain('Cargando consentimiento');
 
     const getRequest = httpController.expectOne(
-      'http://localhost:8080/api/v1/consent-page?accessCode=valid-qr-code&channel=QR'
+      environment.apiBaseUrl + '/consent-page?accessCode=' + environment.accessCode + '&channel=' + environment.channel
     );
     getRequest.flush(createConsentPageResponse());
 
     await harness.fixture.whenStable();
     harness.detectChanges();
+
+    // Verifica que la página se haya cargado correctamente usando la señal pública
+    expect(store.page()).toEqual(jasmine.objectContaining({
+      accessValid: true,
+      channel: 'QR',
+      consentVersion: 'v1'
+    }));
 
     const consentScreen = harness.routeNativeElement as HTMLElement;
     const consentForm = consentScreen.querySelector('form') as HTMLFormElement | null;
@@ -68,7 +81,7 @@ describe('Consent flow integration', () => {
     submitButton?.click();
     harness.detectChanges();
 
-    const postRequest = httpController.expectOne('http://localhost:8080/api/v1/consents');
+    const postRequest = httpController.expectOne(environment.apiBaseUrl + '/consents');
     expect(postRequest.request.body).toEqual(
       jasmine.objectContaining({
         accepted: true,
@@ -80,6 +93,12 @@ describe('Consent flow integration', () => {
 
     await harness.fixture.whenStable();
     harness.detectChanges();
+
+    // Verifica el resultado usando la señal pública del store
+    expect(store.submissionResult()).toEqual(jasmine.objectContaining({
+      authorizationCode: 'ABCDEF',
+      status: 'ACCEPTED'
+    }));
 
     const resultScreen = harness.routeNativeElement as HTMLElement;
     const renderedCode = Array.from(resultScreen.querySelectorAll('.code-card__tile')).map((tile) => tile.textContent?.trim()).join('');
@@ -97,8 +116,9 @@ describe('Consent flow integration', () => {
     await harness.fixture.whenStable();
     harness.detectChanges();
 
+    // Verifica que se recargue la página de consentimiento correctamente
     const reloadRequest = httpController.expectOne(
-      'http://localhost:8080/api/v1/consent-page?accessCode=valid-qr-code&channel=QR'
+      environment.apiBaseUrl + '/consent-page?accessCode=' + environment.accessCode + '&channel=' + environment.channel
     );
     reloadRequest.flush(createConsentPageResponse());
 
@@ -113,6 +133,9 @@ describe('Consent flow integration', () => {
 
     await harness.fixture.whenStable();
     harness.detectChanges();
+
+    // Verifica el estado de error usando la señal pública del store
+    expect(store.error()).not.toBeNull();
 
     const resultScreen = harness.routeNativeElement as HTMLElement;
 
