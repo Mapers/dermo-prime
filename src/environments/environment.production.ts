@@ -1,5 +1,7 @@
+import { variablesConfig } from "../assets/global/variable-config";
+
 export const environment = {
-  production: true,
-  apiBaseUrl: '/api/v1',
-  brandName: 'DERMO PRIME / VISIA'
+    production: variablesConfig.production,
+    apiBaseUrl: variablesConfig.apiBaseUrl,
+    brandName: variablesConfig.brandName
 };

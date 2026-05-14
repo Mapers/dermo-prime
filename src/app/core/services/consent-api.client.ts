@@ -7,14 +7,14 @@ import {
   SubmitConsentRequest,
   SubmitConsentResponse
 } from '../models/consent.models';
-import { variablesConfig } from '../../../assets/global/variable-config';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ConsentApiClient {
   private readonly http = inject(HttpClient);
-  private readonly apiBaseUrl = variablesConfig.apiBaseUrl.replace(/\/$/, '');
+  private readonly apiBaseUrl = environment.apiBaseUrl.replace(/\/$/, '');
 
   getConsentPage(request: ConsentPageRequest): Observable<ConsentPageResponse> {
     const params = new HttpParams({
